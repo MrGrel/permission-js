@@ -1,5 +1,5 @@
 {
-  "name": "@permission-js/react",
+  "name": "permission-js-react",
   "version": "0.0.1",
   "description": "React component for permission-js which makes it easy to add permissions in any React application",
   "repository": {
