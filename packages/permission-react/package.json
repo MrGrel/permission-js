@@ -1,0 +1,37 @@
+{
+  "name": "@permission-js/react",
+  "version": "0.0.1",
+  "description": "React component for permission-js which makes it easy to add permissions in any React application",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MrGrel/permission-js",
+    "directory": "packages/permission-react"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "test": "jest"
+  },
+  "keywords": [
+    "permissions",
+    "authorization",
+    "abac",
+    "rbac",
+    "ibac"
+  ],
+  "author": "Medvedev Egor mr.grel1998@gmail.com",
+  "license": "MIT",
+  "peerDependencies": {
+    "@permission-js/core": "^0.1.0",
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@permission-js/core": "^0.1.0",
+    "vite": "^5.0.0",
+    "typescript": "^5.0.0",
+    "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0"
+
+  }
+}
