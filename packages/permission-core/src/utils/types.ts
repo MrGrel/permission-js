@@ -34,6 +34,8 @@ type CheckMaxSize<B extends any[], S extends any[]> = S extends [
   : U;
 */
 
+import { AnyRecord } from "../types";
+
 // FIXME: in mvp 1.0.0 need to released structure type without this hard type, arr.length = 7 => 13999 type variants, 8 cant load
 export type TupleToUnionTuple<
   T extends any[],
@@ -53,4 +55,8 @@ export type UniqueTuple<T extends any[], Seen extends any[] = []> = T extends [
   : Seen extends [infer I, ...infer Rest]
   ? Seen
   : never;
+
+  export type DeepPartial<T> = {
+    [Key in keyof T]?: T[Key] extends object ? DeepPartial<T[Key]> : T[Key];
+  }
 

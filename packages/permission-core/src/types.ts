@@ -1,8 +1,8 @@
 import { TupleToUnionTuple, UniqueTuple } from "./utils/types";
 
 export type Mode = "some" | "every";
-
 export type AnyRecord = Record<string, any>;
+export type AnyFunction = (...args: any[]) => any;
 
 export type ConvertRecordValue<T extends AnyRecord> = T[string] extends [
   ...T[string]
@@ -52,23 +52,11 @@ export type SubscribedCheckPermissions<
   Conditions extends BaseConditions<Subjects>
 > = CheckPermissions<Subjects, Action, Conditions> & Signal;
 
-// TODO:
-export type SubscriptionKey<S extends string> = {
-  subject: S | S[];
-  action:
-    | BaseActions<S>[S][number]
-    | UniqueTuple<TupleToUnionTuple<BaseActions<S>[S]>>;
+export type SubscriberMap<S extends string, A extends string> = {
+  [key in S]: {
+    [action in A]: Set<Signal["signal"]>;
+  };
 };
-
-export interface SubscriptionValue<
-  S extends string,
-  A extends BaseActions<S>[S],
-  C extends BaseConditions<S>
-> {
-  args: CheckPermissions<S, A, C>;
-  subscribers: Signal["signal"][];
-  callback: () => boolean;
-}
 
 /*
 TODO: structure to which i strive

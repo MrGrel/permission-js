@@ -1,31 +1,35 @@
+import { SubscribeManager } from "./utils/subscribeManager";
 import {
   BaseActions,
   BaseConditions,
   Rules,
-  SubscriptionKey,
-  SubscriptionValue,
   CheckPermissions,
   ConvertRecordValue,
   SubscribedCheckPermissions,
 } from "./types";
+import { DeepPartial } from "./utils/types";
+import { stringPairHandler } from "./utils/stringPairHandler";
+import { autoBind } from "./utils/autoBind";
 
 export class PermissionBuilder<
   S extends string,
   A extends BaseActions<S>,
   C extends BaseConditions<S>
 > {
-  private rules: Rules<S, A, C> | null = null;
+  private rules: Rules<S, A, C> | null;
+  private subscribeManager: SubscribeManager<S, A[S][number]> =
+    new SubscribeManager();
 
-  private subscriptions = new Map<
-    SubscriptionKey<S>,
-    SubscriptionValue<S, A[S], C>
-  >();
+  constructor(rules: DeepPartial<Rules<S, A, C>> = null!) {
+    autoBind(this)
+    this.rules = rules as Rules<S, A, C>;
+  }
 
-  update = <Subject extends S>(
+  update<Subject extends S>(
     subject: Subject,
     action: A[Subject][number],
     value: Rules<S, A, C>[Subject][A[Subject][number]]
-  ) => {
+  ) {
     if (!this.rules) {
       this.rules = {} as Rules<S, A, C>;
     }
@@ -37,100 +41,59 @@ export class PermissionBuilder<
     if (this.rules[subject] && this.rules[subject][action] !== value) {
       this.rules[subject][action] = value;
 
-      this.triggerSubscription(subject, action);
+      this.subscribeManager.call(subject, action);
     }
-  };
+  }
 
-  private triggerSubscription = (subject: S, action: A[S][number]) => {
-    const subscriptionsArrMap = Array.from(this.subscriptions.entries());
-
-    const haveElement = <T>(current: T | T[], el: T) => {
-      if (current instanceof Array) {
-        return current.some((curEl) => curEl === el);
-      }
-
-      return current === el;
-    };
-
-    subscriptionsArrMap.forEach(([keys, { subscribers, args }]) => {
-      const { action: actionKey, subject: subjectKey } = keys;
-      if (haveElement(subjectKey, subject)) {
-        if (haveElement(actionKey, action)) {
-          subscribers.forEach((signal) => signal());
-        }
-      }
-    });
-  };
-
-  subscribedCheck = <Subjects extends S, Action extends A[Subjects]>({
+  subscribedCheck<Subjects extends S, Action extends A[Subjects]>({
     signal,
     ...args
   }: SubscribedCheckPermissions<Subjects, Action, C> & {
     signal: () => void;
-  }): boolean => {
-    const callPermissionCheck = this.subscriptions.get(args);
+  }): boolean {
     const typedArgs = args as CheckPermissions<S, A[Subjects], C>;
 
-    if (!callPermissionCheck) {
-      const callback = () => this.checkPermission(typedArgs);
+    this.setSubscribers;
 
-      this.subscriptions.set(typedArgs, {
-        callback,
-        args: typedArgs,
-        subscribers: [signal],
-      });
-      return callback();
-    }
+    return this.checkPermission(typedArgs);
+  }
 
-    const hasSubscribe = callPermissionCheck.subscribers.some(
-      (subscriber) => subscriber === signal
-    );
+  private setSubscribers({
+    subject,
+    action,
+    signal,
+  }: SubscribedCheckPermissions<S, A[S], C>) {
+    const setTrigger = (subject: S, action: A[S][number]) => {
+      if (this.hasAction(subject, action)) {
+        this.subscribeManager.set(subject, action, signal);
+      }
+    };
 
-    if (!hasSubscribe) {
-      callPermissionCheck.subscribers.push(signal);
-      this.subscriptions.set(typedArgs, callPermissionCheck);
-    }
+    stringPairHandler(subject, action, setTrigger, "forEach", null);
+  }
 
-    return callPermissionCheck.callback();
+  private hasAction = (subject: S, action: A[S][number]) => {
+    return !!this.rules?.[subject]?.[action] !== undefined;
   };
 
-  checkPermission = ({
+  checkPermission({
     subject,
     action,
     conditions,
     mode = "some",
-  }: CheckPermissions<S, A[S], C>): boolean => {
-    if (Array.isArray(subject) && typeof action === "string") {
-      if (!subject.length) return false;
-      return subject[mode]((s) => this.checkPermissions(s, action, conditions));
-    }
-
-    if (Array.isArray(action) && typeof subject === "string") {
-      if (!action.length) return false;
-
-      return action[mode]((a) => this.checkPermissions(subject, a, conditions));
-    }
-
-    if (Array.isArray(subject) && Array.isArray(action)) {
-      if (!subject.length || !action.length) return false;
-
-      return subject[mode]((s) =>
-        action[mode]((a) => this.checkPermissions(s, a, conditions))
-      );
-    }
-
-    if (typeof subject === "string" && typeof action === "string") {
+  }: CheckPermissions<S, A[S], C>): boolean {
+    const checkPermissionsCb = (subject: S, action: A[S][number]) => {
       return this.checkPermissions(subject, action, conditions);
-    }
+    };
 
-    return false;
-  };
+    return stringPairHandler(subject, action, checkPermissionsCb, mode, false);
+  }
 
-  private checkPermissions = (
+  private checkPermissions(
     subject: S,
     action: A[S][number],
     conditions?: C[S] | ConvertRecordValue<C[S]>
-  ): boolean => {
+  ): boolean {
     if (!this.rules) return false;
 
     const selfSubject = this.rules[subject];
@@ -161,7 +124,7 @@ export class PermissionBuilder<
     }
 
     return false;
-  };
+  }
 }
 
 type keys = "image" | "article" | "comment" | "like";
