@@ -1,8 +1,8 @@
-import react from "@vitejs/plugin-react";
-import dts from "vite-plugin-dts";
+import react from '@vitejs/plugin-react'
+import dts from 'vite-plugin-dts'
 
-import { defineConfig } from "vite";
-import path from "path";
+import { defineConfig } from 'vite'
+import path from 'path'
 
 export default defineConfig({
   plugins: [
@@ -13,15 +13,16 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/index.tsx"),
-      name: "PermissionReact",
-      fileName: (format) => `index.${format}.js`,
+      entry: 'src/index.tsx',
+      name: 'PermissionReact',
+      formats: ['umd', 'es'],
+      fileName: format => `index.${format}.js`,
     },
     rollupOptions: {
-      external: ["react", "@permission/core"],
+      external: ['react', 'react-dom', '@permission/core'],
     },
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".jsx"],
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
-});
+})
