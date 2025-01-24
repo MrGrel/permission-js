@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "ESNext", 
+    "module": "ESNext",
     "moduleResolution": "node",
-    "strict": true,
-    "declaration": true,
-    "emitDeclarationOnly": false,
-    "noErrorTruncation": true,
-    "allowJs": true,
-    "esModuleInterop": true
+    "esModuleInterop": true, 
+    "skipLibCheck": true, 
+    "strict": true, 
+    "declaration": true, 
+    "declarationMap": true, 
+    "emitDeclarationOnly": true,
+    "allowJs": true,  
+    "sourceMap": true, 
   }
 }

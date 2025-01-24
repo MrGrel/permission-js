@@ -30,13 +30,13 @@ export class PermissionBuilder<S extends string, A extends BaseActions<S>, C ext
       this.rules = {} as Rules<S, A, C>
     }
 
-    if (!this.rules[subject]) {
+    if (!this.rules?.[subject]) {
       this.rules[subject] = {} as Rules<S, A, C>[Subject]
     }
 
-    if (this.rules[subject] && this.rules[subject][action] !== value) {
+    if (this.rules?.[subject] &&  this.rules[subject]?.[action] !== value) {
       this.rules[subject][action] = value
-
+      
       this.subscribeManager.call(subject, action)
     }
   }
@@ -79,13 +79,13 @@ export class PermissionBuilder<S extends string, A extends BaseActions<S>, C ext
   private checkPermissions(subject: S, action: A[S][number], conditions?: C[S] | ConvertRecordValue<C[S]>): boolean {
     if (!this.rules) return false
 
-    const selfSubject = this.rules[subject]
+    const selfSubject = this.rules?.[subject]
 
     if (!selfSubject) {
       return false
     }
 
-    const permission = selfSubject[action]
+    const permission = selfSubject?.[action]
 
     if (typeof permission === 'boolean') {
       return permission

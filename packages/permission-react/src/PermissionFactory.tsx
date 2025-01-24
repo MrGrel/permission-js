@@ -1,18 +1,18 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react'
 
 import { PermissionBuilder, BaseActions, BaseConditions, CheckPermissions } from 'permission-js-core'
 import { typedMemo } from './utils/typedMemo'
 
-export const reactFactoryPermission = <S extends string, A extends BaseActions<S>, C extends BaseConditions<S>>() => {
+export function reactFactoryPermission<S extends string, A extends BaseActions<S>, C extends BaseConditions<S>>() {
   const Context = createContext<PermissionBuilder<S, A, C> | null>(null)
 
-  const PermissionProvider = ({ children }: { children: React.ReactNode }) => {
+  const PermissionProvider = ({ children }: PropsWithChildren) => {
     const [contextValue] = useState(() => new PermissionBuilder<S, A, C>())
 
     return <Context.Provider value={contextValue}>{children}</Context.Provider>
   }
 
-  const usePermission = () => {
+  function usePermission() {
     const context = useContext(Context)
     if (!context) throw new Error('Use subscribing check without PermissionProvider')
 
@@ -38,10 +38,11 @@ export const reactFactoryPermission = <S extends string, A extends BaseActions<S
       children,
       element = null,
       ...args
-    }: CheckPermissions<Subjects, Action, C> & {
-      children: React.ReactNode
-      element?: React.ReactNode
-    }): React.ReactNode => {
+    }: PropsWithChildren<
+      CheckPermissions<Subjects, Action, C> & {
+        element?: React.ReactNode
+      }
+    >): React.ReactNode => {
       const { can } = usePermission()
 
       const result = useMemo(() => can(args), [can])
@@ -60,3 +61,5 @@ export const reactFactoryPermission = <S extends string, A extends BaseActions<S
     PermissionProvider,
   }
 }
+
+export const callChlen = () => 'chlen' 

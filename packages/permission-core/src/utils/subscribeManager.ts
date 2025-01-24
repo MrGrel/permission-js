@@ -51,8 +51,8 @@ export class SubscribeManager<S extends string, A extends string> {
   }
 
   private callCurrent = (subject: S, action: A) => {
-    if (this.mapSubscribers[subject] && this.mapSubscribers[subject][action]) {
-      const currentSet = this.mapSubscribers[subject][action];
+    if (this.mapSubscribers?.[subject] && this.mapSubscribers?.[subject]?.[action]) {
+      const currentSet = this.mapSubscribers?.[subject]?.[action];
 
       currentSet.forEach((cb) => this.queue.add(cb));
       currentSet.clear();
