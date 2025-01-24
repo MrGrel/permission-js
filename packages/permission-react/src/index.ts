@@ -1,1 +1,1 @@
-export { reactFactoryPermission as createPermissionProvider, callChlen} from './PermissionFactory'
+export { reactFactoryPermission as createPermissionProvider } from './PermissionFactory'

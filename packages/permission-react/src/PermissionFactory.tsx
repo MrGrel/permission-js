@@ -70,5 +70,3 @@ export function reactFactoryPermission<S extends string, A extends BaseActions<S
     PermissionProvider,
   }
 }
-
-export const callChlen = () => 'chlen'
