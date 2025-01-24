@@ -9,7 +9,7 @@
     "directory": "packages/permission-react"
   },
   "scripts": {
-    "build": "rollup -c",
+    "build": "rmdir /s /q dist &&rollup -c",
     "test": "jest"
   },
   "keywords": [
@@ -28,17 +28,12 @@
     "react-dom": "^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
-    "@babel/preset-react": "^7.26.3",
-    "@types/react": "^17.0.0 || ^18.0.0",
-    "prettier": "^3.0.0",
-    "rollup": "^4.31.0",
-    "rollup-plugin-dts": "^6.1.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "permission-js-core": "^0.1.6"
   },
-  "main": "./dist/cjs/index.js",
+  "main": "./dist/index.js",
   "module": "./dist/index.es.mjs",
   "types": "./index.d.ts",
   "exports": {

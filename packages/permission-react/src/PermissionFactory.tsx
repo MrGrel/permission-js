@@ -1,4 +1,13 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react'
+import {
+  ComponentType,
+  createContext,
+  memo,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react'
 
 import { PermissionBuilder, BaseActions, BaseConditions, CheckPermissions } from 'permission-js-core'
 import { typedMemo } from './utils/typedMemo'
@@ -12,7 +21,7 @@ export function reactFactoryPermission<S extends string, A extends BaseActions<S
     return <Context.Provider value={contextValue}>{children}</Context.Provider>
   }
 
-  function usePermission() {
+  const usePermission = () => {
     const context = useContext(Context)
     if (!context) throw new Error('Use subscribing check without PermissionProvider')
 
@@ -62,4 +71,4 @@ export function reactFactoryPermission<S extends string, A extends BaseActions<S
   }
 }
 
-export const callChlen = () => 'chlen' 
+export const callChlen = () => 'chlen'

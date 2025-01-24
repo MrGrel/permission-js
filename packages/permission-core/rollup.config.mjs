@@ -1,40 +1,30 @@
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
-import babel from '@rollup/plugin-babel'
-import dts from 'rollup-plugin-dts'
 import typescript from '@rollup/plugin-typescript'
+import dts from 'rollup-plugin-dts'
+import terser from '@rollup/plugin-terser'
+import peerDepsExternal from 'rollup-plugin-peer-deps-external'
 
 export default [
   {
     input: 'src/index.ts',
     output: [
       {
-        file: 'dist/index.js',
+        file: './dist/index.js',
         format: 'cjs',
         sourcemap: true,
       },
       {
-        file: 'dist/index.mjs',
+        file: './dist/index.mjs',
         format: 'esm',
         sourcemap: true,
       },
     ],
-    plugins: [
-      resolve({ extensions: ['.ts', '.js'] }),
-      typescript({ tsconfig: './tsconfig.build.json' }),
-      commonjs(),
-      babel({
-        babelHelpers: 'bundled',
-        extensions: ['.js, .ts'],
-      }),
-    ],
+    plugins: [peerDepsExternal(), resolve(), commonjs(), typescript({ tsconfig: './tsconfig.json' }), terser()],
   },
   {
     input: 'src/index.ts',
-    output: {
-      file: 'dist/index.d.ts',
-      format: 'es',
-    },
+    output: [{ file: './dist/index.d.ts' }],
     plugins: [dts()],
   },
 ]
