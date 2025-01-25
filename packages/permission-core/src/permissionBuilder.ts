@@ -49,23 +49,17 @@ export class PermissionBuilder<S extends string, A extends BaseActions<S>, C ext
   }): boolean {
     const typedArgs = args as CheckPermissions<S, A[Subjects], C>
 
-    this.setSubscribers
+    this.setSubscribers({ subject: typedArgs.subject, action: typedArgs.action, signal })
 
     return this.checkPermission(typedArgs)
   }
 
   private setSubscribers({ subject, action, signal }: SubscribedCheckPermissions<S, A[S], C>) {
     const setTrigger = (subject: S, action: A[S][number]) => {
-      if (this.hasAction(subject, action)) {
-        this.subscribeManager.set(subject, action, signal)
-      }
+      this.subscribeManager.set(subject, action, signal)
     }
 
     stringPairHandler(subject, action, setTrigger, 'forEach', null)
-  }
-
-  private hasAction = (subject: S, action: A[S][number]) => {
-    return !!this.rules?.[subject]?.[action] !== undefined
   }
 
   checkPermission({ subject, action, conditions, mode = 'some' }: CheckPermissions<S, A[S], C>): boolean {
