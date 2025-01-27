@@ -1,1 +1,2 @@
-export { reactFactoryPermission as createPermissionProvider } from './PermissionFactory'
+export { factoryReactPermission } from './PermissionFactory'
+export type { PermissionProviderProps, ReturnFactoryPermission } from './types'

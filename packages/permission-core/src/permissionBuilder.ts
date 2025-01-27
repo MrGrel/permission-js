@@ -1,3 +1,4 @@
+import { SubscribeManager } from './subscribeManager'
 import {
   Rules,
   BaseActions,
@@ -5,12 +6,12 @@ import {
   CheckPermissions,
   ConvertRecordValue,
   SubscribedCheckPermissions,
+  UnsubscribePermssions,
+  PrevSignal,
 } from './types'
-
 import { autoBind } from './utils/autoBind'
-import { DeepPartial } from './utils/types'
-import { SubscribeManager } from './utils/subscribeManager'
 import { stringPairHandler } from './utils/stringPairHandler'
+import { DeepPartial } from './utils/types'
 
 export class PermissionBuilder<S extends string, A extends BaseActions<S>, C extends BaseConditions<S>> {
   private rules: Rules<S, A, C> | null
@@ -34,32 +35,40 @@ export class PermissionBuilder<S extends string, A extends BaseActions<S>, C ext
       this.rules[subject] = {} as Rules<S, A, C>[Subject]
     }
 
-    if (this.rules?.[subject] &&  this.rules[subject]?.[action] !== value) {
+    if (this.rules?.[subject] && this.rules[subject]?.[action] !== value) {
       this.rules[subject][action] = value
-      
+
       this.subscribeManager.call(subject, action)
     }
   }
 
   subscribedCheck<Subjects extends S, Action extends A[Subjects]>({
     signal,
+    prevSignal,
     ...args
-  }: SubscribedCheckPermissions<Subjects, Action, C> & {
-    signal: () => void
-  }): boolean {
-    const typedArgs = args as CheckPermissions<S, A[Subjects], C>
+  }: SubscribedCheckPermissions<Subjects, Action, C> & PrevSignal): boolean {
+    if (prevSignal) {
+      this.removeSubscribe({ subject: args.subject, action: args.action, prevSignal })
+    }
+    this.setSubscribe({ subject: args.subject, action: args.action, signal })
 
-    this.setSubscribers({ subject: typedArgs.subject, action: typedArgs.action, signal })
-
-    return this.checkPermission(typedArgs)
+    return this.checkPermission(args as CheckPermissions<S, A[S], C>)
   }
 
-  private setSubscribers({ subject, action, signal }: SubscribedCheckPermissions<S, A[S], C>) {
+  private setSubscribe({ subject, action, signal }: SubscribedCheckPermissions<S, A[S], C>) {
     const setTrigger = (subject: S, action: A[S][number]) => {
       this.subscribeManager.set(subject, action, signal)
     }
 
     stringPairHandler(subject, action, setTrigger, 'forEach', null)
+  }
+
+  private removeSubscribe({ subject, action, prevSignal }: UnsubscribePermssions<S, A[S], C>) {
+    const removeTrigger = (subject: S, action: A[S][number]) => {
+      this.subscribeManager.remove(subject, action, prevSignal)
+    }
+
+    stringPairHandler(subject, action, removeTrigger, 'forEach', null)
   }
 
   checkPermission({ subject, action, conditions, mode = 'some' }: CheckPermissions<S, A[S], C>): boolean {

@@ -1,42 +1,38 @@
-import {
-  ComponentType,
-  createContext,
-  memo,
-  PropsWithChildren,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
+import { factoryPermission, BaseActions, BaseConditions, CheckPermissions } from 'permission-js-core'
+import { createContext, PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react'
 
-import { PermissionBuilder, BaseActions, BaseConditions, CheckPermissions } from 'permission-js-core'
+import { PermissionProviderProps, ReturnFactoryPermission } from './types'
 import { typedMemo } from './utils/typedMemo'
 
-export function reactFactoryPermission<S extends string, A extends BaseActions<S>, C extends BaseConditions<S>>() {
-  const Context = createContext<PermissionBuilder<S, A, C> | null>(null)
+export function factoryReactPermission<S extends string, A extends BaseActions<S>, C extends BaseConditions<S>>() {
+  const Context = createContext<ReturnFactoryPermission<S, A, C> | null>(null)
 
-  const PermissionProvider = ({ children }: PropsWithChildren) => {
-    const [contextValue] = useState(() => new PermissionBuilder<S, A, C>())
+  const PermissionProvider = ({ children }: PermissionProviderProps<S, A, C>) => {
+    const [contextValue] = useState(() => factoryPermission<S, A, C>())
 
-    return <Context.Provider value={contextValue}>{children}</Context.Provider>
+    const currentChidlren = typeof children === 'function' ? children(contextValue.update) : children
+
+    return <Context.Provider value={contextValue}>{currentChidlren}</Context.Provider>
   }
 
   const usePermission = () => {
     const context = useContext(Context)
     if (!context) throw new Error('Use subscribing check without PermissionProvider')
 
-    const { subscribedCheck, update } = context
-    const [signal, setSignal] = useState(false)
+    const { subscribe, update } = context
+    const [, setSignal] = useState(false)
+
+    const subscribedCheck = useMemo(() => subscribe(), [subscribe])
 
     const trigger = useCallback(() => {
-      setSignal(prev => !prev)
-    }, [signal])
+      setSignal(state => !state)
+    }, [])
 
     const can = useCallback(
       <Subjects extends S, Action extends A[Subjects]>(args: CheckPermissions<Subjects, Action, C>) => {
         return subscribedCheck({ ...args, signal: trigger })
       },
-      [trigger],
+      [subscribedCheck, trigger],
     )
 
     return { can, update }
@@ -54,7 +50,8 @@ export function reactFactoryPermission<S extends string, A extends BaseActions<S
     >): React.ReactNode => {
       const { can } = usePermission()
 
-      const result = useMemo(() => can(args), [can])
+      const arrArgs = Object.values(args)
+      const result = useMemo(() => can(args), [...arrArgs, can])
 
       if (result) {
         return children

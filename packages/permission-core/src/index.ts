@@ -1,4 +1,4 @@
-export { PermissionBuilder } from './permissionBuilder'
+export { factoryPermission } from './permissionFactory'
 export type {
   AnyFunction,
   AnyRecord,
@@ -12,4 +12,4 @@ export type {
   SubscribedCheckPermissions,
   SubscriberMap,
   Tuple,
-} from  './types'
+} from './types'
