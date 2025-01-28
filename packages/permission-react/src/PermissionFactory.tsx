@@ -1,4 +1,4 @@
-import { factoryPermission, BaseActions, BaseConditions, CheckPermissions } from 'permission-js-core'
+import { factoryPermission, BaseActions, BaseConditions, CheckPermissions, SubscribedCheckPermissions } from 'permission-js-core'
 import { createContext, PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react'
 
 import { PermissionProviderProps, ReturnFactoryPermission } from './types'
@@ -15,14 +15,26 @@ export function factoryReactPermission<S extends string, A extends BaseActions<S
     return <Context.Provider value={contextValue}>{currentChidlren}</Context.Provider>
   }
 
-  const usePermission = () => {
+  const useStrictContext = () => {
     const context = useContext(Context)
-    if (!context) throw new Error('Use subscribing check without PermissionProvider')
 
-    const { subscribe, update } = context
-    const [, setSignal] = useState(false)
+    if (!context) throw new Error('Use context without PermissionProvider')
 
-    const subscribedCheck = useMemo(() => subscribe(), [subscribe])
+    return context
+  }
+
+  const usePermission = () => {
+    const { can, update } = useStrictContext()  
+
+    return { can, update }
+  }
+
+  const useSubscribePermission = <Subjects extends S, Action extends A[Subjects]>(props: SubscribedCheckPermissions<Subjects, Action, C>)() => {
+    const { subscribe } = useStrictContext()
+    const [can] = useState(() => subscribe(), [subscribe])
+
+      const [, setSignal] = useState(false)
+
 
     const trigger = useCallback(() => {
       setSignal(state => !state)
@@ -34,8 +46,6 @@ export function factoryReactPermission<S extends string, A extends BaseActions<S
       },
       [subscribedCheck, trigger],
     )
-
-    return { can, update }
   }
 
   const Can = typedMemo(

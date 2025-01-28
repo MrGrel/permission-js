@@ -24,6 +24,8 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      "@typescript-eslint/no-explicit-any": "off",
+      "no-console": ["error"],
       'import/order': [
         'error',
         {
@@ -34,7 +36,6 @@ export default tseslint.config(
       ],
       'import/no-unresolved': 'off',
       semi: ['error', 'never'],
-      "no-console": ["error"],
       'import/extensions': [
         'error',
         {
